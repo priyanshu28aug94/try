@@ -1,0 +1,186 @@
+# Copyright (c) Mainflux
+# SPDX-License-Identifier: Apache-2.0
+
+defaults:
+  logLevel: "info"
+  image:
+    pullPolicy: "IfNotPresent"
+    repository: "mainflux"
+    tag: "0.11.0"
+  # Replicas of MQTT adapter, NATS, Things, Envoy and Authn
+  replicaCount: 3
+
+ingress:
+  enabled: true
+  annotations: {}
+  labels: {}
+  # Uncomment this block for TLS support in public ingress
+  # hostname: ""
+  # tls:
+  #   hostname: ""
+  #   secret: ""
+
+nginx_internal:
+  mtls:
+    # By default mTLS is disabled. If you use mTLS, comment this block.
+    tls: ""
+    intermediate_crt: ""
+    # Uncomment this block for TLS and mTLS support.
+    # Use sh script from /secrets/secrets.sh to create config maps with your certs
+    # tls: "nginx-internal-mtls-tls"
+    # intermediate_crt: "nginx-internal-mtls-intermediate-crt"
+
+adapter_http:
+  image: {}
+
+adapter_ws:
+  image: {}
+
+adapter_coap:
+  image: {}
+
+adapter_opcua:
+  enabled: false
+  image: {}
+  policy: ""
+  mode: ""
+  certFile: ""
+  keyFile: ""
+  eventConsumer: "opcua"
+
+mqtt:
+  enabled: true
+  securityContext:
+    runAsUser: 10000
+    runAsGroup: 10000
+    fsGroup: 10000
+  proxy: 
+    image:
+      repository: "mainflux/mqtt"
+      tag: "0.11.0"
+      pullPolicy: "Always"
+    mqtt_port: 1884
+    ws_port: 8081
+    logLevel: "debug"
+  broker:
+    image: 
+      repository: "mainflux/vernemq"
+      tag: "0.11.0"
+    mqtt_port: 1883
+    ws_port: 8080
+    logLevel: "info"
+    persistentVolume:
+      size: 5Gi
+
+users:
+  image: {}
+
+things:
+  image: {}
+
+authn:
+  image: {}
+
+bootstrap:
+  enabled: false
+  image: {}
+
+ui:
+  image: {}
+
+influxdb:
+  enabled: false
+  writer:
+    image: {}
+  reader:
+    image: {}
+  initScripts:
+    enabled: true
+    scripts:
+      init.iql: |+
+        CREATE DATABASE "mainflux"
+
+nats:
+  auth:
+    enabled: false
+  clusterAuth:
+    enabled: false
+  maxPayload: 268435456
+  replicaCount: 3
+
+postgresql-users:
+  name: postgresql-users
+  postgresqlUsername: mainflux
+  postgresqlPassword: mainflux
+  postgresqlDatabase: users
+  resources:
+    requests:
+      cpu: 25m
+
+postgresql-things:
+  name: postgresql-things
+  postgresqlUsername: mainflux
+  postgresqlPassword: mainflux
+  postgresqlDatabase: things
+  resources:
+    requests:
+      cpu: 25m
+
+postgresql-authn:
+  name: postgresql-authn
+  postgresqlUsername: mainflux
+  postgresqlPassword: mainflux
+  postgresqlDatabase: authn
+  resources:
+    requests:
+      cpu: 25m
+
+postgresql-bootstrap:
+  name: postgresql-bootstrap
+  postgresqlUsername: mainflux
+  postgresqlPassword: mainflux
+  postgresqlDatabase: bootstrap
+  resources:
+    requests:
+      cpu: 25m
+
+redis-streams:
+  cluster:
+    enabled: false
+  usePassword: false
+
+redis-mqtt:
+  cluster:
+    enabled: false
+  usePassword: false
+
+redis-auth:
+  cluster:
+    enabled: false
+  usePassword: false
+  master:
+    persistence:
+      enabled: false
+
+redis-opcua:
+  cluster:
+    enabled: false
+  usePassword: false
+  master:
+    persistence:
+      enabled: false      
+
+jaeger-operator:
+  jaeger:
+    create: true
+  rbac:
+    pspEnabled: true
+    clusterRole: true
+
+twins:
+  enabled: false
+  image: {}
+  channelid: ""
+
+twins-db:
+  usePassword: false

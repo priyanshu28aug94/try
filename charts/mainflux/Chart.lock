@@ -1,0 +1,36 @@
+dependencies:
+- name: nats
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 4.2.6
+- name: postgresql
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 7.4.0
+- name: postgresql
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 7.4.0
+- name: postgresql
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 7.4.0
+- name: postgresql
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 7.4.0
+- name: redis
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 9.5.5
+- name: redis
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 9.5.5
+- name: redis
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 9.5.5
+- name: redis
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 9.5.5
+- name: influxdb
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 4.3.2
+- name: mongodb
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 7.8.10
+digest: sha256:9e872fb94942473bcf2c60d5a3f5ae4c75cdc6dd304363bc992a9332b422f2df
+generated: "2020-06-26T16:24:43.300728949+02:00"

@@ -1,0 +1,154 @@
+# Copyright (c) Mainflux
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+{{- if .Values.ingress.annotations }}
+  annotations:
+{{ toYaml .Values.ingress.annotations | indent 4 }}
+{{- end }}
+{{- if .Values.ingress.labels }}
+  labels:
+{{ toYaml .Values.ingress.labels | indent 4 }}
+{{- end }}
+  name: {{ .Release.Name }}-nginx-ingress
+spec:
+  rules:
+    - host: "{{ .Values.ingress.hostname }}"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ .Release.Name }}-ui
+              servicePort: 3000
+            path: /
+          - path: /version
+            backend:
+              serviceName: {{ .Release.Name }}-things
+              servicePort: 8182
+{{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.tls.hostname }}
+      secretName: {{ .Values.ingress.tls.secret }}
+{{- end }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+{{- if .Values.ingress.annotations }}
+{{ toYaml .Values.ingress.annotations | indent 4 }}
+{{- end }}
+{{- if .Values.ingress.labels }}
+  labels:
+{{ toYaml .Values.ingress.labels | indent 4 }}
+{{- end }}
+  name: {{ .Release.Name }}-nginx-rewrite-ingress
+spec:
+  rules:
+    - host: "{{ .Values.ingress.hostname }}"
+      http:
+        paths:
+          - path: /grafana/?(.*)
+            backend:
+              serviceName: grafana
+              servicePort: 3000
+          - path: /(users)
+            backend:
+              serviceName: {{ .Release.Name }}-users
+              servicePort: 8180
+          - path: /(password?.*)
+            backend:
+              serviceName: {{ .Release.Name }}-users
+              servicePort: 8180
+          - path: /(tokens)
+            backend:
+              serviceName: {{ .Release.Name }}-users
+              servicePort: 8180
+          - path: /(things?.*)
+            backend:
+              serviceName: {{ .Release.Name }}-things
+              servicePort: 8182
+          - path: /(channels?.*)
+            backend:
+              serviceName: {{ .Release.Name }}-things
+              servicePort: 8182
+          - path: /(connect?.*)
+            backend:
+              serviceName: {{ .Release.Name }}-things
+              servicePort: 8182
+          - path: /http/?(.*)
+            backend:
+              serviceName: {{ .Release.Name }}-adapter-http
+              servicePort: 8185
+          - path: /bs/?(.*)
+            backend:
+              serviceName: {{ .Release.Name }}-bootstrap
+              servicePort: 8202
+          - path: /version/users/?(.*)
+            backend:
+              serviceName: {{ .Release.Name }}-users
+              servicePort: 8180
+          - path: /version/things/?(.*)
+            backend:
+              serviceName: {{ .Release.Name }}-things
+              servicePort: 8182
+          - path: /version/http/?(.*)
+            backend:
+              serviceName: {{ .Release.Name }}-adapter-http
+              servicePort: 8185
+          - path: /(mqtt)
+            backend:
+              serviceName: {{ .Release.Name }}-adapter-mqtt
+              servicePort: 8081
+{{- if .Values.bootstrap.enabled }}
+          - path: /bootstrap/?(.*)
+            backend:
+              serviceName: {{ .Release.Name }}-bootstrap
+              servicePort: 8202
+{{- end }}
+{{- if .Values.influxdb.enabled }}
+          - path: /reader/?(.*)
+            backend:
+              serviceName: {{ .Release.Name }}-influxdb-reader
+              servicePort: 8905 
+          - path: /writer/?(.*)
+            backend:
+              serviceName: {{ .Release.Name }}-adapter-http
+              servicePort: 8185 
+{{- end }}
+{{- if .Values.twins.enabled }}
+          - path: /(twins?.*)
+            backend:
+              serviceName: {{ .Release.Name }}-twins
+              servicePort: 9021
+          - path: /(states?.*)
+            backend:
+              serviceName: {{ .Release.Name }}-twins
+              servicePort: 9021
+{{- end }}
+{{- if .Values.adapter_opcua.enabled }}
+          - path: /(browse?.*)
+            backend:
+              serviceName: {{ .Release.Name }}-adapter-opcua
+              servicePort: 8188
+{{- end }}
+{{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.tls.hostname }}
+      secretName: {{ .Values.ingress.tls.secret }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+data:
+  # MQTT adapter:
+  1883: "{{ .Release.Namespace }}/{{ .Release.Name }}-envoy:1883:PROXY"
+  8883: "{{ .Release.Namespace }}/{{ .Release.Name }}-nginx-internal:8883:PROXY"
+metadata:
+  name: tcp-services
+  namespace: {{ .Release.Namespace }}
